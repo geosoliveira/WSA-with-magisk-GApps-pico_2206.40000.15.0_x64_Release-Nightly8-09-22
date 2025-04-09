@@ -104,7 +104,7 @@ jobs:
       - name: Dependencies
         run: |
           echo "Dependencies..."
-          sudo apt-get update && sudo apt-get install setools lzip wine winetricks patchelf
+          sudo apt-get update && sudo apt-get install setools lzip wine winetricks patchelf p7zip-full
           wget -qO- "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/archive/$GITHUB_REF.tar.gz" | sudo tar --wildcards -zxvf- -C ~ --strip-component=2 '*/wine/*' '*/linker/*' '*/xml/*'
           winetricks msxml6
       - name: Download WSA
@@ -122,57 +122,23 @@ jobs:
           from pathlib import Path
           warnings.filterwarnings("ignore")
           
-          shared_url = "https://drive.google.com/file/d/1-HvLhcWOQp01UAKN9if-BZ6Qdbvjsq_n/view?usp=sharing"
-          save_as = "wsa.zip"
+          shared_url = "https://drive.google.com/file/d/1-_fKn-EdtJ0yqVNzfO0nL3FWLhRgKoRm/view?usp=sharing"
+          save_as = "wsa.7z"
           file_id = shared_url.split('/d/')[1].split('/')[0]
           download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
           print(f"Baixando arquivo de: {download_url}")
           response = requests.get(download_url, stream=True)
           if response.status_code == 200:
               with open(save_as, "wb") as f:
-                for chunk in response.iter_content(1024):
-                    f.write(chunk)
+                  for chunk in response.iter_content(1024):
+                      f.write(chunk)
               print(f"Arquivo salvo como: {save_as}")
           else:
               print("Erro ao baixar o arquivo:", response.status_code)
               return response.status_code
-          zip_name = ""
-          with zipfile.ZipFile("wsa.zip") as zip:
-              for f in zip.filelist:
-                  if arch in f.filename.lower():
-                      zip_name = f.filename
-                      if not os.path.isfile(zip_name):
-                          print(f"unzipping to {zip_name}", flush=True)
-                          zip.extract(f)
-                          ver_no = zip_name.split("_")
-                          long_ver = ver_no[1]
-                          ver=long_ver.split(".")
-                          main_ver=ver[0]
-                          with open(os.environ['GITHUB_ENV'], 'a') as g:
-                              g.write(f'WSA_VER={long_ver}\n')
-                          with open(os.environ['GITHUB_ENV'], 'a') as g:
-                              g.write(f'WSA_MAIN_VER={main_ver}\n')
-                          rel = ver_no[3].split(".")
-                          rell = str(rel[0])
-                          with open(os.environ['GITHUB_ENV'], 'a') as g:
-                              g.write(f'WSA_REL={rell}\n')
-                  if 'language' in f.filename.lower() or 'scale' in f.filename.lower():
-                      name = f.filename.split("-", 1)[1].split(".")[0]
-                      zip.extract(f)
-                      with zipfile.ZipFile(f.filename) as l:
-                          for g in l.filelist:
-                              if g.filename == 'resources.pri':
-                                  g.filename = f'{name}.pri'
-                                  l.extract(g, 'pri')
-                                  print(f"extract resource pack {g.filename}")
-                              elif g.filename == 'AppxManifest.xml':
-                                  g.filename = f'{name}.xml'
-                                  l.extract(g, 'xml')
-          with zipfile.ZipFile(zip_name) as zip:
-              if not os.path.isdir(arch):
-                  print(f"unzipping from {zip_name}", flush=True)
-                  zip.extractall(arch)
-          print("done", flush=True)
+      - name: Extract WSA
+        run: |
+          7z x wsa.7z -o${{ matrix.arch }}
       - name: Download Magisk
         shell: python
         run: |
