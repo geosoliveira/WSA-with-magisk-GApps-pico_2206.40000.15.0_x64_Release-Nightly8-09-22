@@ -97,14 +97,14 @@ jobs:
     steps:
       - name: Dependencies
         run: |
-		  echo "Dependencies..."
+          echo "Dependencies..."
           sudo apt-get update && sudo apt-get install setools lzip wine winetricks patchelf
           wget -qO- "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/archive/$GITHUB_REF.tar.gz" | sudo tar --wildcards -zxvf- -C ~ --strip-component=2 '*/wine/*' '*/linker/*' '*/xml/*'
           winetricks msxml6
       - name: Download WSA
         shell: python
         run: |
-		  print("Download WSA...")
+          print("Download WSA...")
           import requests
           from xml.dom import minidom
           import html
@@ -213,7 +213,7 @@ jobs:
       - name: Download Magisk
         shell: python
         run: |
-		  print("Download Magisk...")
+          print("Download Magisk...")
           import urllib.request
           import zipfile
           import os
@@ -260,7 +260,7 @@ jobs:
         if: ${{ github.event.inputs.gapps_variant != 'none' && github.event.inputs.gapps_variant != '' }}
         shell: python
         run: |
-		  print("Download OpenGApps...")
+          print("Download OpenGApps...")
           import requests
           import zipfile
           import os
@@ -291,12 +291,12 @@ jobs:
       - name: Extract GApps
         if: ${{ github.event.inputs.gapps_variant != 'none' && github.event.inputs.gapps_variant != '' }}
         run: |
-		  echo "Extract GApps..."
+          echo "Extract GApps..."
           mkdir gapps
           unzip -p gapps.zip {Core,GApps}/'*.lz' | tar --lzip -C gapps -xvf - -i --strip-components=2 --exclude='setupwizardtablet-x86_64' --exclude='packageinstallergoogle-all' --exclude='speech-common' --exclude='markup-lib-arm' --exclude='markup-lib-arm64' --exclude='markup-all' --exclude='setupwizarddefault-x86_64' --exclude='pixellauncher-all' --exclude='pixellauncher-common'
       - name: Expand images
         run: |
-		  echo "Expand images..."
+          echo "Expand images..."
           e2fsck -yf ${{ matrix.arch }}/system_ext.img
           system_ext_size=$(( $(du -sB512 ${{ matrix.arch }}/system_ext.img | cut -f1) + 20000 ))
           resize2fs ${{ matrix.arch }}/system_ext.img "$system_ext_size"s
@@ -323,7 +323,7 @@ jobs:
           resize2fs ${{ matrix.arch }}/vendor.img "$vendor_size"s
       - name: Mount images
         run: |
-		  echo "Mount images..."
+          echo "Mount images..."
           sudo mkdir system
           sudo mount -o loop ${{ matrix.arch }}/system.img system
           sudo mount -o loop ${{ matrix.arch }}/vendor.img system/vendor
@@ -332,12 +332,12 @@ jobs:
       - name: Remove Amazon AppStore
         if: ${{ github.event.inputs.remove_amazon == 'remove' }}
         run: |
-		  echo "Remove Amazon AppStore..."
+          echo "Remove Amazon AppStore..."
           find system/product/{etc/permissions,etc/sysconfig,framework,priv-app} | grep -e amazon -e venezia | sudo xargs rm -rf
       - name: Integrate Magisk
         if: ${{ github.event.inputs.root_sol == 'magisk' || github.event.inputs.root_sol == '' }}
         run: |
-		  echo "Integrate Magisk..."
+          echo "Integrate Magisk..."
           sudo mkdir system/sbin
           sudo chcon --reference system/init.environ.rc system/sbin
           sudo chown root:root system/sbin
@@ -417,7 +417,7 @@ jobs:
           EOF
       - name: Merge Language Resources
         run: |
-		  echo "Merge Language Resources..."
+          echo "Merge Language Resources..."
           cp ${{ matrix.arch }}/resources.pri pri/en-us.pri
           cp ${{ matrix.arch }}/AppxManifest.xml xml/en-us.xml
           tee priconfig.xml <<EOF
@@ -433,7 +433,7 @@ jobs:
           sed -i -zE "s/<Resources.*Resources>/<Resources>\n$(cat xml/* | grep -Po '<Resource [^>]*/>' | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/\$/\\$/g' | sed 's/\//\\\//g')\n<\/Resources>/g" ${{ matrix.arch }}/AppxManifest.xml
       - name: Add extra packages
         run: |
-		  echo "Add extra packages..."
+          echo "Add extra packages..."
           wget -qO- "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/archive/$GITHUB_REF.tar.gz" | sudo tar --wildcards -zxvf- --strip-component=2 '*/${{ matrix.arch }}/system/*'
           sudo find system/system/priv-app -type d -exec chmod 0755 {} \;
           sudo find system/system/priv-app -type f -exec chmod 0644 {} \;
@@ -441,7 +441,7 @@ jobs:
       - name: Integrate GApps
         if: ${{ github.event.inputs.gapps_variant != 'none' && github.event.inputs.gapps_variant != '' }}
         run: |
-		  echo "Integrate GApps..."
+          echo "Integrate GApps..."
           wget -qO- "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/archive/$GITHUB_REF.tar.gz" | sudo tar --wildcards -zxvf- --strip-component=2 '*/${{ matrix.arch }}/gapps/*'
           shopt -s extglob
           sudo cp -vr gapps/!(product) system/system
@@ -469,7 +469,7 @@ jobs:
         if: ${{ github.event.inputs.gapps_variant != 'none' && github.event.inputs.gapps_variant != '' }}
         shell: sudo python {0}
         run: |
-		  print("Fix GApps prop...")
+          print("Fix GApps prop...")
           from __future__ import annotations
           from io import TextIOWrapper
           from os import system, path
@@ -526,7 +526,7 @@ jobs:
               fix_prop(sec, prop)
       - name: Umount images
         run: |
-		  echo "Umount images..."
+          echo "Umount images..."
           sudo find system -exec touch -amt 200901010000.00 {} \;> /dev/null 2>&1
           sudo umount system/vendor
           sudo umount system/product
@@ -534,7 +534,7 @@ jobs:
           sudo umount system
       - name: Shrink images
         run: |
-		  echo "Shrink images..."
+          echo "Shrink images..."
           e2fsck -yf ${{ matrix.arch }}/system.img
           resize2fs -M ${{ matrix.arch }}/system.img
           e2fsck -yf ${{ matrix.arch }}/vendor.img
@@ -545,7 +545,7 @@ jobs:
           resize2fs -M ${{ matrix.arch }}/system_ext.img
       - name: Remove signature and add scripts
         run: |
-		  echo "Remove signature and add scripts..."
+          echo "Remove signature and add scripts..."
           rm -rf ${{ matrix.arch }}/\[Content_Types\].xml ${{ matrix.arch }}/AppxBlockMap.xml ${{ matrix.arch }}/AppxSignature.p7x ${{ matrix.arch }}/AppxMetadata
           cp vclibs.appx xaml.appx ${{ matrix.arch }}
           tee ${{ matrix.arch }}/Install.ps1 <<EOF
@@ -635,7 +635,7 @@ jobs:
           EOF
       - name: Generate artifact name
         run: |
-		  echo "Generate artifact name..."
+          echo "Generate artifact name..."
           variant="${{ github.event.inputs.gapps_variant }}"
           root="${{ github.event.inputs.root_sol }}"
           if [[ "$root" = "none" ]]; then
