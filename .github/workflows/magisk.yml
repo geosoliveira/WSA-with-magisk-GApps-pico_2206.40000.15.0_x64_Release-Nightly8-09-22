@@ -135,7 +135,6 @@ jobs:
               print(f"Arquivo salvo como: {save_as}")
           else:
               print("Erro ao baixar o arquivo:", response.status_code)
-              return response.status_code
       - name: Extract WSA
         run: |
           7z x wsa.7z -o${{ matrix.arch }}
