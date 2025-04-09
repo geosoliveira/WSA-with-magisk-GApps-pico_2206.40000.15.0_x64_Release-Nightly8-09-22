@@ -95,6 +95,8 @@ jobs:
     strategy:
       matrix: ${{fromJson(needs.matrix.outputs.matrix)}}
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
       - name: Dependencies
         run: |
           echo "Dependencies..."
@@ -120,7 +122,7 @@ jobs:
           release_type_map = {"retail": "Retail", "release preview": "RP", "insider slow": "WIS", "insider fast": "WIF"}
           release_type = release_type_map["${{ github.event.inputs.release_type }}"] if "${{ github.event.inputs.release_type }}" != "" else "Retail"
           cat_id = '858014f3-3934-4abe-8078-4aa193e74ca8'
-          with open(Path.home() / "GetCookie.xml", "r") as f:
+          with open("xml/GetCookie.xml", "r") as f:
             cookie_content = f.read()
           out = requests.post(
               'https://fe3.delivery.mp.microsoft.com/ClientWebService/client.asmx',
@@ -131,7 +133,7 @@ jobs:
           doc = minidom.parseString(out.text)
           cookie = doc.getElementsByTagName('EncryptedData')[0].firstChild.nodeValue
           print(cookie)
-          with open(Path.home() / "WUIDRequest.xml", "r") as f:
+          with open("xml/WUIDRequest.xml", "r") as f:
             cat_id_content = f.read().format(cookie, cat_id, release_type)
           out = requests.post(
               'https://fe3.delivery.mp.microsoft.com/ClientWebService/client.asmx',
@@ -149,7 +151,7 @@ jobs:
               filename = filenames[node.parentNode.parentNode.parentNode.getElementsByTagName('ID')[0].firstChild.nodeValue]
               update_identity = node.parentNode.parentNode.firstChild
               identities += [(update_identity.attributes['UpdateID'].value, update_identity.attributes['RevisionNumber'].value, filename)]
-          with open(Path.home() / "FE3FileUrl.xml", "r") as f:
+          with open("xml/FE3FileUrl.xml", "r") as f:
             file_content = f.read()
           for i, v, f in identities:
               if re.match(f"Microsoft\.UI\.Xaml\..*_{arch}_.*\.appx", f):
@@ -657,7 +659,7 @@ jobs:
           fi
           echo "artifact_name=WSA${name1}${name2}_${{ env.WSA_VER }}_${{ matrix.arch }}_${{ env.WSA_REL }}" >> $GITHUB_ENV
       - name: Upload WSA
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifact_name }}
           path: "./${{ matrix.arch }}/*"
