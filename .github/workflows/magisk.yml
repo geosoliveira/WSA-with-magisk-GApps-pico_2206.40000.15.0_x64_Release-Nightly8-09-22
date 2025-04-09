@@ -303,7 +303,7 @@ jobs:
       - name: Verificar imagens extraídas
         run: |
           echo "Arquivos em ${{ matrix.arch }}/:"
-          ls -lh ${{ matrix.arch }}/
+          ls -lhR ${{ matrix.arch }}/
       - name: Expand images
         run: |
           echo "Expand images..."
